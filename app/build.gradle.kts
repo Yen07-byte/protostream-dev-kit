@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application") version "8.2.2"
-    id("org.jetbrains.kotlin.android") version "1.9.22"
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -100,7 +100,7 @@ tasks.register("buildProtoGame") {
 
         val metadataFile = file("$buildDir/tmp/metadata.json")
         metadataFile.parentFile.mkdirs()
-        
+
         // Format JSON manually to avoid external heavy dependencies
         val jsonContent = """
             {
@@ -110,7 +110,7 @@ tasks.register("buildProtoGame") {
               "mainClass": "$detectedMainClass"
             }
         """.trimIndent()
-        
+
         metadataFile.writeText(jsonContent)
 
         // Search inside APK output for classes.dex
