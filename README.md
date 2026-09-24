@@ -21,6 +21,8 @@ You will need to clone this repository in **Android Studio**. If you haven't use
 2. Open `SampleGame.java`. This is your main game file!
 3. Fill out the `@GameInfo` annotation at the top with your game's Title (what is your game called?), Author (that's you!), and Description (what is your game about?).
 4. Write your game logic inside `onUpdate()` and draw your pixels in `onRender()`.
+5. **Note:** Remember to place your imports alongside the others at the top, and **not** within the `SampleGame` (or whatever you choose to name it) public class like the rest of your code!
+    * A quick note: changing `SampleName` does not serve much purpose. However, if you wish to do so anyways, don't forget to also rename `SampleGame.java` to your new public class name! This can be done by right-clicking `SampleName.java` in the Project Explorer, then clicking **Rename**. After inputting your desired name, click **Refactor**.
 
 *(Note: You can create as many helper Java classes as you want, just make sure your main class extends `ProtoGame`!)*
 
