@@ -26,30 +26,28 @@ android {
 }
 
 dependencies {
-    // Basic Android dependencies required for building DEX files
     implementation("androidx.core:core-ktx:1.12.0")
 }
 
-/**
- * Custom Gradle Task: buildProtoGame
- *
- * This task automates the entire .protogame creation pipeline:
- * 1. Runs standard release build to compile code into Android DEX bytecode (classes.dex).
- * 2. Parses the primary Java source file to extract @GameInfo metadata (title, author, desc) & mainClass.
- * 3. Generates the required metadata.json file.
- * 4. Zips classes.dex and metadata.json into a .protogame file in the output folder.
- */
 tasks.register("buildProtoGame") {
     group = "protostream"
     description = "Compiles the game and packages it into a .protogame file for ProtoStream."
 
-    // Depends on assembling the release build first so DEX is generated
     dependsOn("assembleRelease")
 
+    // 1. Capture required paths during the Configuration Phase to avoid cache errors!
+    val projDir = project.projectDir
+    val buildDir = layout.buildDirectory.get().asFile
+
     doLast {
-        val projectDir = project.projectDir
-        val javaSrcDir = file("$projectDir/src/main/java")
-        val outputDir = file("$projectDir/output")
+        // 2. Define the helper function inside doLast so it doesn't reference the outer script
+        fun escapeJson(text: String): String {
+            return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
+        }
+
+        // Use the paths captured above
+        val javaSrcDir = File(projDir, "src/main/java")
+        val outputDir = File(projDir, "output")
         if (!outputDir.exists()) outputDir.mkdirs()
 
         var detectedTitle = "Custom Game"
@@ -57,11 +55,9 @@ tasks.register("buildProtoGame") {
         var detectedDesc = "Built with ProtoStream Dev Kit"
         var detectedMainClass = ""
 
-        // Scan java files for @GameInfo and package name
         javaSrcDir.walkTopDown().filter { it.extension == "java" }.forEach { file ->
             val content = file.readText()
             if (content.contains("@GameInfo")) {
-                // Extract package and class name to resolve mainClass
                 var pkg = ""
                 val pkgMatch = Regex("""package\s+([\w\.]+);""").find(content)
                 if (pkgMatch != null) {
@@ -73,15 +69,12 @@ tasks.register("buildProtoGame") {
                     detectedMainClass = if (pkg.isNotEmpty()) "$pkg.$className" else className
                 }
 
-                // Extract title
                 val titleMatch = Regex("""title\s*=\s*"([^"]+)"""").find(content)
                 if (titleMatch != null) detectedTitle = titleMatch.groupValues[1]
 
-                // Extract author
                 val authorMatch = Regex("""author\s*=\s*"([^"]+)"""").find(content)
                 if (authorMatch != null) detectedAuthor = authorMatch.groupValues[1]
 
-                // Extract description
                 val descMatch = Regex("""description\s*=\s*"([^"]+)"""").find(content)
                 if (descMatch != null) detectedDesc = descMatch.groupValues[1]
             }
@@ -98,12 +91,9 @@ tasks.register("buildProtoGame") {
         println("Main Class: $detectedMainClass")
         println("=========================================")
 
-        // Use modern layout APIs instead of the deprecated buildDir
-        val buildDirectory = layout.buildDirectory.get().asFile
-        val metadataFile = File(buildDirectory, "tmp/metadata.json")
+        val metadataFile = File(buildDir, "tmp/metadata.json")
         metadataFile.parentFile.mkdirs()
 
-        // Format JSON manually to avoid external heavy dependencies
         val jsonContent = """
             {
               "title": "${escapeJson(detectedTitle)}",
@@ -115,15 +105,13 @@ tasks.register("buildProtoGame") {
 
         metadataFile.writeText(jsonContent)
 
-        // Search inside APK output for classes.dex
-        val apkFile = File(buildDirectory, "outputs/apk/release/app-release-unsigned.apk")
-        val dexFile = File(buildDirectory, "tmp/classes.dex")
+        val apkFile = File(buildDir, "outputs/apk/release/app-release-unsigned.apk")
+        val dexFile = File(buildDir, "tmp/classes.dex")
 
         if (!apkFile.exists()) {
             throw GradleException("Release APK missing! Build failed.")
         }
 
-        // Extract classes.dex from the assembled APK
         ZipFile(apkFile).use { zip ->
             val entry = zip.getEntry("classes.dex")
                 ?: throw GradleException("classes.dex not found inside release APK!")
@@ -136,12 +124,10 @@ tasks.register("buildProtoGame") {
         val protogameFile = File(outputDir, "$sanitizedFileName.protogame")
 
         ZipOutputStream(protogameFile.outputStream()).use { zipOut ->
-            // Add classes.dex
             zipOut.putNextEntry(ZipEntry("classes.dex"))
             dexFile.inputStream().use { it.copyTo(zipOut) }
             zipOut.closeEntry()
 
-            // Add metadata.json
             zipOut.putNextEntry(ZipEntry("metadata.json"))
             metadataFile.inputStream().use { it.copyTo(zipOut) }
             zipOut.closeEntry()
@@ -151,8 +137,4 @@ tasks.register("buildProtoGame") {
         println(" -> ${protogameFile.absolutePath}")
         println("=========================================")
     }
-}
-
-fun escapeJson(text: String): String {
-    return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
 }
