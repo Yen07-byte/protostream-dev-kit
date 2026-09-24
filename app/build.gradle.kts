@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -19,10 +18,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
@@ -32,7 +27,7 @@ dependencies {
 
 /**
  * Custom Gradle Task: buildProtoGame
- * 
+ *
  * This task automates the entire .protogame creation pipeline:
  * 1. Runs standard release build to compile code into Android DEX bytecode (classes.dex).
  * 2. Parses the primary Java source file to extract @GameInfo metadata (title, author, desc) & mainClass.
