@@ -1,3 +1,8 @@
+import java.util.zip.ZipFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import java.io.File
+
 plugins {
     id("com.android.application")
 }
@@ -93,7 +98,9 @@ tasks.register("buildProtoGame") {
         println("Main Class: $detectedMainClass")
         println("=========================================")
 
-        val metadataFile = file("$buildDir/tmp/metadata.json")
+        // Use modern layout APIs instead of the deprecated buildDir
+        val buildDirectory = layout.buildDirectory.get().asFile
+        val metadataFile = File(buildDirectory, "tmp/metadata.json")
         metadataFile.parentFile.mkdirs()
 
         // Format JSON manually to avoid external heavy dependencies
@@ -109,15 +116,15 @@ tasks.register("buildProtoGame") {
         metadataFile.writeText(jsonContent)
 
         // Search inside APK output for classes.dex
-        val apkFile = file("$buildDir/outputs/apk/release/app-release-unsigned.apk")
-        val dexFile = file("$buildDir/tmp/classes.dex")
+        val apkFile = File(buildDirectory, "outputs/apk/release/app-release-unsigned.apk")
+        val dexFile = File(buildDirectory, "tmp/classes.dex")
 
         if (!apkFile.exists()) {
             throw GradleException("Release APK missing! Build failed.")
         }
 
         // Extract classes.dex from the assembled APK
-        java.util.zip.ZipFile(apkFile).use { zip ->
+        ZipFile(apkFile).use { zip ->
             val entry = zip.getEntry("classes.dex")
                 ?: throw GradleException("classes.dex not found inside release APK!")
             zip.getInputStream(entry).use { input ->
@@ -126,16 +133,16 @@ tasks.register("buildProtoGame") {
         }
 
         val sanitizedFileName = detectedTitle.replace(Regex("[^a-zA-Z0-9_-]"), "_")
-        val protogameFile = file("$outputDir/$sanitizedFileName.protogame")
+        val protogameFile = File(outputDir, "$sanitizedFileName.protogame")
 
-        java.util.zip.ZipOutputStream(protogameFile.outputStream()).use { zipOut ->
+        ZipOutputStream(protogameFile.outputStream()).use { zipOut ->
             // Add classes.dex
-            zipOut.putNextEntry(java.util.zip.ZipEntry("classes.dex"))
+            zipOut.putNextEntry(ZipEntry("classes.dex"))
             dexFile.inputStream().use { it.copyTo(zipOut) }
             zipOut.closeEntry()
 
             // Add metadata.json
-            zipOut.putNextEntry(java.util.zip.ZipEntry("metadata.json"))
+            zipOut.putNextEntry(ZipEntry("metadata.json"))
             metadataFile.inputStream().use { it.copyTo(zipOut) }
             zipOut.closeEntry()
         }
