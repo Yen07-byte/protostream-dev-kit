@@ -152,15 +152,15 @@ if (input.isPressed(Input.Button.A)) {
 #### Available Buttons
 
 | Button Enum | Keyboard Mapping | Touch Overlay | Gamepad Hardware Mapping |
-| :--- | :--- | :--- | :--- |
-| `Input.Button.UP` | `W` / Up Arrow | D-Pad Up | D-Pad Up / Left Stick Up |
-| `Input.Button.DOWN` | `S` / Down Arrow | D-Pad Down | D-Pad Down / Left Stick Down |
-| `Input.Button.LEFT` | `A` / Left Arrow | D-Pad Left | D-Pad Left / Left Stick Left |
-| `Input.Button.RIGHT` | `D` / Right Arrow | D-Pad Right | D-Pad Right / Left Stick Right |
-| `Input.Button.A` | `Z` / `Space` / `Enter` | A Button | Gamepad Button A / Cross |
-| `Input.Button.B` | `X` | B Button | Gamepad Button B / Circle |
-| `Input.Button.START` | `P` | - | Gamepad Start Button |
-| `Input.Button.SELECT` | `Tab` | - | Gamepad Select Button |
+| :--- | :--- |:--------------| :--- |
+| `Input.Button.UP` | `W` / Up Arrow | D-Pad Up      | D-Pad Up / Left Stick Up |
+| `Input.Button.DOWN` | `S` / Down Arrow | D-Pad Down    | D-Pad Down / Left Stick Down |
+| `Input.Button.LEFT` | `A` / Left Arrow | D-Pad Left    | D-Pad Left / Left Stick Left |
+| `Input.Button.RIGHT` | `D` / Right Arrow | D-Pad Right   | D-Pad Right / Left Stick Right |
+| `Input.Button.A` | `Z` / `Space` / `Enter` | A Button      | Gamepad Button A / Cross |
+| `Input.Button.B` | `X` | B Button      | Gamepad Button B / Circle |
+| `Input.Button.START` | `P` | Start Button  | Gamepad Start Button |
+| `Input.Button.SELECT` | `Tab` | Select Button | Gamepad Select Button |
 
 #### Button Debouncing (Edge Triggering)
 
