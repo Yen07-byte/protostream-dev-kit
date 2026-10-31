@@ -33,22 +33,22 @@ dependencies {
 
 tasks.register("buildProtoGame") {
     group = "protostream"
-    description = "Compiles the game and packages it into a .protogame file for ProtoStream."
+    description = "Compiles the game and packages classes.dex, metadata.json, and assets/ into a .protogame file."
 
     dependsOn("assembleRelease")
 
-    // 1. Capture required paths during the Configuration Phase to avoid cache errors!
+    // 1. Capture required paths during the Configuration Phase to avoid configuration cache errors
     val projDir = project.projectDir
     val buildDir = layout.buildDirectory.get().asFile
 
     doLast {
-        // 2. Define the helper function inside doLast so it doesn't reference the outer script
+        // 2. Helper function to escape JSON string literals safely
         fun escapeJson(text: String): String {
             return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
         }
 
-        // Use the paths captured above
         val javaSrcDir = File(projDir, "src/main/java")
+        val assetsSrcDir = File(projDir, "src/main/assets")
         val outputDir = File(projDir, "output")
         if (!outputDir.exists()) outputDir.mkdirs()
 
@@ -57,15 +57,15 @@ tasks.register("buildProtoGame") {
         var detectedDesc = "Built with ProtoStream Dev Kit"
         var detectedMainClass = ""
 
-        javaSrcDir.walkTopDown().filter { it.extension == "java" }.forEach { file ->
+        javaSrcDir.walkTopDown().filter { it.extension == "java" || it.extension == "kt" }.forEach { file ->
             val content = file.readText()
             if (content.contains("@GameInfo")) {
                 var pkg = ""
-                val pkgMatch = Regex("""package\s+([\w\.]+);""").find(content)
+                val pkgMatch = Regex("""package\s+([\w\.]+);?""").find(content)
                 if (pkgMatch != null) {
                     pkg = pkgMatch.groupValues[1]
                 }
-                val classMatch = Regex("""public\s+class\s+(\w+)\s+extends\s+ProtoGame""").find(content)
+                val classMatch = Regex("""class\s+(\w+)\s*(?:extends|:)\s*ProtoGame""").find(content)
                 if (classMatch != null) {
                     val className = classMatch.groupValues[1]
                     detectedMainClass = if (pkg.isNotEmpty()) "$pkg.$className" else className
@@ -125,6 +125,7 @@ tasks.register("buildProtoGame") {
         val sanitizedFileName = detectedTitle.replace(Regex("[^a-zA-Z0-9_-]"), "_")
         val protogameFile = File(outputDir, "$sanitizedFileName.protogame")
 
+        var bundledAssetCount = 0
         ZipOutputStream(protogameFile.outputStream()).use { zipOut ->
             zipOut.putNextEntry(ZipEntry("classes.dex"))
             dexFile.inputStream().use { it.copyTo(zipOut) }
@@ -133,8 +134,20 @@ tasks.register("buildProtoGame") {
             zipOut.putNextEntry(ZipEntry("metadata.json"))
             metadataFile.inputStream().use { it.copyTo(zipOut) }
             zipOut.closeEntry()
+
+            if (assetsSrcDir.exists() && assetsSrcDir.isDirectory) {
+                assetsSrcDir.walkTopDown().filter { it.isFile }.forEach { assetFile ->
+                    val relPath = assetFile.relativeTo(assetsSrcDir).invariantSeparatorsPath
+                    zipOut.putNextEntry(ZipEntry("assets/$relPath"))
+                    assetFile.inputStream().use { it.copyTo(zipOut) }
+                    zipOut.closeEntry()
+                    bundledAssetCount++
+                    println(" -> Bundled asset: assets/$relPath")
+                }
+            }
         }
 
+        println("Bundled $bundledAssetCount asset file(s) from src/main/assets.")
         println("SUCCESS: Generated .protogame file at:")
         println(" -> ${protogameFile.absolutePath}")
         println("=========================================")
