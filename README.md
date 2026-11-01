@@ -4,73 +4,159 @@
 
 Notice: This project is source-available under the **PolyForm Noncommercial License 1.0.0**. You are free to modify, share, and use this Dev Kit for any personal or non-commercial purpose. While you cannot sell the resulting `.protogame` files or use them for commercial exploitation, you are fully permitted to create files for both the free and paid versions of **Yen's ProtoStream**. Developers are also welcome to accept voluntary tips or donations for their creations on platforms like Patreon or Ko-fi, provided a fully functional, free version of the `.protogame` file remains publicly available.
 
-Welcome to the ProtoStream Dev Kit! This template provides everything you need to write, preview, and package custom Java or Kotlin games for the ProtoStream Matrix platform.
+Welcome to the **ProtoStream Dev Kit**! This template provides everything you need to write, live-test, and package custom Java or Kotlin games for the **128 x 32 ProtoStream Matrix** platform—even if you have never used Android Studio before.
 
-## 🚀 Quick Start Guide
+## 🧭 Beginner's Guide to Android Studio & Project Setup
 
-### 1. Project Setup
+### 1. Installing Android Studio (First-Time Users)
 
-You will need to clone this repository in **Android Studio**. If you haven't used Android Studio before, follow these steps to get started:
+If you do not have Android Studio installed yet:
 
-1. If you are currently in an open project, click `File -> Close Project`.
+1. Download the official installer from [developer.android.com/studio](https://developer.android.com/studio).
 
-2. On the welcome screen, click **Clone Repository**.
+2. Run the installer and keep all default checkboxes enabled (`Android SDK`, `Android SDK Platform`, and `Android Virtual Device`).
 
-3. Paste the URL of this repository into the URL field and click **Clone**.
+3. Launch Android Studio and step through the **Standard** initial setup wizard so it downloads the required Android SDK tools automatically.
 
-4. Wait for the initial Gradle sync to complete and load all dependencies.
+### 2. Cloning & Opening the Dev Kit Project
 
-### 2. Write Your Game & Add Sprites
+1. Open **Android Studio**.
+   * If you are on the **Welcome to Android Studio** screen, click **Get from VCS** (or **Clone Repository**).
+   * If you already have another project open, click **File -> New -> Project from Version Control...** in the top menu bar.
 
-1. Navigate to `app/src/main/java/com/protostream/devkit/` in the Project Explorer on the left.
+2. In the **URL** field, paste the URL of this repository (`https://github.com/Yen07-byte/protostream-dev-kit`) and click **Clone**.
 
-2. Open `SampleGame.java`. This is your main game class!
+3. **Wait for Gradle Sync to Finish (Important!):**
+   * Look at the **bottom-right corner** of the Android Studio window. You will see a progress bar that says `Gradle Build Running` or `Syncing...`.
+   * The very first time you open the project, Android Studio downloads the build tools it needs (which can take 1–3 minutes depending on your internet connection). Wait until that bottom-right progress bar disappears before running or building your game.
 
-3. Fill out the `@GameInfo` annotation at the top with your game's `title`, `author`, and `description`.
+### 3. Navigating Android Studio's Project Explorer (`Android` View vs. `Project` View)
 
-4. *(Optional)* Place any custom PNG, GIF, BMP, or WebP sprite images inside `app/src/main/assets/` (for example, `player_sheet.png` or `heart.png`). They will automatically be bundled into your `.protogame` file!
+On the **far-left side** of Android Studio is the **Project** panel (if it is minimized, click the folder icon labeled **Project** on the left sidebar).
 
-5. Write your initialization code in `onInit()`, game logic in `onUpdate()`, and visual drawing code in `onRender()`.
+At the very top of that panel is a dropdown menu that defaults to **Android**:
 
-6. *(Optional)* You can create helper classes in the same package. Just ensure your main entry class extends `ProtoGame` and includes the `@GameInfo` annotation.
+* **Android View (Default):** Groups your code and assets cleanly for daily coding:
+  * `app -> java -> com.protostream.devkit -> SampleGame` *(Your main game code!)*
+  * `app -> java -> com.protostream.devkit -> PreviewActivity` *(Built-in live emulator preview)*
+  * `app -> java -> com.protostream.devkit -> ProtoStreamSDK` *(SDK reference interfaces)*
+  * `app -> assets` *(Folder where you drop `.png` sprite images)*
+* **Project View (Shows Real Folders on Disk):** Click the **Android** dropdown at the top-left and switch it to **Project** whenever you want to see the actual folder tree on your computer—including the **`app/output/`** folder where your finished `.protogame` files are saved!
 
-> 💡 **Note on Class Renaming:** If you rename `SampleGame`, remember to also rename the Java file (`SampleGame.java -> YourNewName.java`) using Android Studio's **Refactor -> Rename** option (`Shift + F6`), and update `new SampleGame()` in `PreviewActivity.java` if you use the live emulator preview.
+## 📱 Using the Built-In Mobile Device Emulator (Live Testing)
 
-### 3. Live Test in Android Studio (Emulator or Phone)
+You do **not** need to export a `.protogame` file and copy it to your phone every time you want to test a change! The Dev Kit includes a built-in **`PreviewActivity`** that simulates the `128 x 32` LED matrix, on-screen gamepad (**D-Pad**, **A**, **B**, **SELECT**, **START**), and visor **BOOP** sensor right on your computer screen.
 
-Before packaging your `.protogame` file, you can test and step-debug your game right inside Android Studio:
+### Step 1: Create a Virtual Phone in Android Studio (One-Time Setup)
 
-1. Select an Android Emulator or connected phone in the top toolbar of Android Studio.
+If you have never created an Android Emulator before, follow these steps once:
 
-2. Click the green **Run ▶** button (`Shift + F10`).
+1. Look at the **right-hand sidebar** of Android Studio and click the **Device Manager** icon (it looks like a small mobile phone), or click **Tools -> Device Manager** in the top menu bar.
 
-3. The built-in **`PreviewActivity`** will launch a scaled `128 x 32` LED matrix simulator complete with on-screen **D-Pad**, **A**, **B**, **SELECT**, **START**, and a simulated **BOOP** button!
+2. At the top of the **Device Manager** panel, click the **`+`** button and select **Create Virtual Device**.
 
-### 4. Build Your `.protogame` Package
+3. Under the **Phone** category, select any modern device profile (such as **Pixel 7** or **Pixel 8**) and click **Next**.
 
-When you are ready to compile your project into a `.protogame` package:
+4. On the **System Image** screen, look at the top recommended release (such as **API 34 ("UpsideDownCake")** or **API 35 ("VanillaIceCream")**):
+   * If there is a blue **Download** icon next to the system image name, click it and wait for the download to complete, then click **Finish**.
+   * Select that system image and click **Next**, then click **Finish**.
 
-1. Open the **Gradle** tab on the far-right panel of Android Studio.
+Your virtual phone now appears in the **Device Manager** list and in the device dropdown menu on Android Studio's top toolbar!
 
-2. Click the **Execute Gradle Task** icon (the small box with a play arrow).
+### Step 2: Launch Your Game in the Emulator
 
-3. In the popup bar, type `buildProtoGame` and press **Enter**.
+1. In the **top toolbar** of Android Studio, make sure the configuration dropdown says **`app`** and the target device dropdown next to it shows your virtual phone (e.g., **Pixel 7**).
 
-Android Studio will automatically compile your code, package your `metadata.json`, bundle every image inside `app/src/main/assets/`, and output a `.protogame` file in `app/output/`.
+2. Click the green **Run 'app' (▶)** play button in the top toolbar (or press `Shift + F10` on Windows/Linux, `Ctrl + R` on macOS).
 
-### 5. Import to ProtoStream
+3. The Android Emulator window will boot up and automatically launch **ProtoStream DevKit Live Preview**!
 
-1. Expand the `app/output/` folder in the Android Studio Project Explorer.
+### Step 3: Controlling Your Game in the Emulator
 
-2. Copy your generated `.protogame` file to your mobile device.
+Once the preview app is running on the virtual phone, you can test your game using any of the following methods:
 
-3. Open the **ProtoStream** app, navigate to **Games Plugin Manager -> Custom Games**, and tap **Import .protogame**!
+* **Mouse / Touch Overlay:** Click the on-screen **UP**, **DOWN**, **LEFT**, **RIGHT**, **A**, **B**, **SELECT**, **START**, and **BOOP** buttons directly inside the emulator window.
+* **Computer Keyboard:** Click once inside the emulator screen so it has keyboard focus, then use your PC keyboard:
+  * **Movement (D-Pad):** `W` / `A` / `S` / `D` or **Arrow Keys**
+  * **A Button:** `Z`, `Spacebar`, or `Enter`
+  * **B Button:** `X`
+  * **Start Button:** `P`
+  * **Select Button:** `Tab`
+* **Simulating Visor Boops:** Click the blue **BOOP** button at the bottom-right of the preview controls to trigger `input.isJustBooped()` / `input.isBooped()`.
+* **Simulating 3D Head Tilt (`getTiltX` / `getTiltY`):**
+  1. Look at the vertical toolbar attached to the side of the Android Emulator window and click the **`...` (Extended Controls)** button at the bottom.
+  2. Click **Virtual sensors** in the left menu of the popup window.
+  3. Select the **Rotate** or **Move** radio button and drag the 3D phone model to tilt the virtual device in real time!
+
+> 💡 **Testing a New or Renamed Game Class in the Emulator:** By default, `PreviewActivity.java` instantiates `new SampleGame()` on line 69 (`game = new SampleGame();`). If you rename `SampleGame` or create a second game class (such as `MyCoolGame`), update that single line in `PreviewActivity.java` to `game = new MyCoolGame();` so the emulator previews your new class!
+
+### Optional: Live Testing on a Physical Android Phone
+
+If you prefer to run the live preview on your real Android phone instead of the PC emulator:
+
+1. On your phone, open **Settings -> About phone** and tap **Build number** 7 times until it says *"You are now a developer!"*.
+
+2. Go back to **Settings -> System -> Developer options** and turn on **USB debugging** (to connect via USB cable) or **Wireless debugging** (to pair over Wi-Fi using **Pair device with QR code** inside Android Studio's **Device Manager**).
+
+3. Select your physical phone in Android Studio's top device dropdown and click the green **Run ▶** button!
+
+## ✍️ Writing, Packaging & Importing Your Game
+
+### 1. Edit Your Game Code
+
+1. In the left **Project** panel (in **Android** view), expand `app -> java -> com.protostream.devkit` and double-click **`SampleGame`**.
+
+2. Update the `@GameInfo` annotation at the top with your game's `title`, `author`, and `description`:
+
+   ```java
+   @GameInfo(
+       title = "My Visor Game",
+       author = "YourName",
+       description = "Describe your game and controls here."
+   )
+   ```
+
+3. Write your initialization logic in `onInit()`, per-frame game logic in `onUpdate(Input input)`, and drawing code in `onRender(ProtoCanvas canvas)`.
+
+> 💡 **How to Safely Rename `SampleGame`:** In Java, a `public class` name must match its `.java` filename. To rename `SampleGame`, right-click `SampleGame` in the left Project Explorer, select **Refactor -> Rename...** (`Shift + F6`), type your new class name, and press **Enter**. Android Studio will rename both the class and the file automatically.
+
+### 2. Build Your `.protogame` Package
+
+When you are ready to export your finished `.protogame` file for the ProtoStream app, you can use either the **Gradle Sidebar** or the **Terminal**:
+
+#### Option A: Using the Gradle Sidebar
+
+1. Click the **Gradle** tab on the **far-right sidebar** of Android Studio (the elephant icon).
+
+2. Click the **Execute Gradle Task** icon at the top of the Gradle panel (or expand `ProtoStreamDevKit -> app -> Tasks -> protostream` and double-click **`buildProtoGame`**).
+
+3. If using the popup bar, type `buildProtoGame` and press **Enter**.
+
+#### Option B: Using the Bottom Terminal Tab
+
+1. Click the **Terminal** tab at the **bottom** of Android Studio.
+
+2. Run the following command and press **Enter**:
+   * **Windows:** `.\gradlew.bat buildProtoGame`
+   * **macOS / Linux:** `./gradlew buildProtoGame`
+
+Android Studio will compile your code, generate `metadata.json`, bundle all sprite images from `app/src/main/assets/`, and print the output path in the build log!
+
+### 3. Find Your `.protogame` File & Import to ProtoStream
+
+1. In the left **Project** panel, click the dropdown at the top-left that says **Android** and switch it to **Project**.
+
+2. Expand `ProtoStreamDevKit -> app -> output`.
+
+3. Right-click your generated `<YourGameTitle>.protogame` file and select **Open In -> Explorer** (Windows) or **Open In -> Finder** (macOS).
+
+4. Copy the `.protogame` file to your phone, open the **ProtoStream** app, go to **Games Plugin Manager -> Custom Games**, and tap **Import .protogame**!
 
 ## 🛠️ Complete API Reference
 
 ### 1. Game Lifecycle, Timing & Frame Counter
 
-Every custom game extends `ProtoGame`. The engine executes your code inside a dedicated game thread running at approximately **30 FPS (~33ms per frame)**.
+Every custom game extends `ProtoGame`. The engine executes your code inside a dedicated game loop running at approximately **30 FPS (~33ms per frame)**.
 
 ```java
 public class MyGame extends ProtoGame {
@@ -99,15 +185,6 @@ public class MyGame extends ProtoGame {
 ### 2. Annotation Metadata (`@GameInfo`)
 
 The `@GameInfo` annotation allows ProtoStream's Custom Game manager to index and display your game's details without launching the engine.
-
-```java
-@GameInfo(
-    title = "Space Defender DX",
-    author = "ProtoStream Devs",
-    description = "Retro arcade shooter with PNG sprite sheets, weapon switching, and saved high scores."
-)
-public class SampleGame extends ProtoGame { ... }
-```
 
 | Field | Type | Description |
 | ----- | ----- | ----- |
@@ -146,14 +223,14 @@ canvas.drawText("PAUSED", 46, 18, 0xFFF59E0B);
 
 | Method | Parameters | Description |
 | ----- | ----- | ----- |
-| `clear(color)` | `int color` | Fills the entire $128 	imes 32$ canvas with a solid ARGB color. |
+| `clear(color)` | `int color` | Fills the entire $128 \times 32$ canvas with a solid ARGB color. |
 | `setPixel(x, y, color)` | `int x, int y, int color` | Sets an individual pixel at $(x, y)$ with alpha-blending support. |
 | `fillRect(x, y, w, h, color)` | `int x, int y, int width, int height, int color` | Fills a solid rectangle from $(x, y)$ extending $w$ pixels right and $h$ pixels down. |
 | `drawRect(x, y, w, h, color)` | `int x, int y, int width, int height, int color` | Draws a 1-pixel unfilled rectangle outline. |
 | `drawLine(x1, y1, x2, y2, color)` | `int x1, int y1, int x2, int y2, int color` | Draws a crisp 1-pixel line between $(x_1, y_1)$ and $(x_2, y_2)$. |
 | `drawCircle(cx, cy, r, color)` | `int cx, int cy, int radius, int color` | Draws a 1-pixel circle outline centered at $(cx, cy)$. |
 | `fillCircle(cx, cy, r, color)` | `int cx, int cy, int radius, int color` | Draws a solid filled circle centered at $(cx, cy)$. |
-| `drawText(text, x, y, color)` | `String text, int x, int y, int color` | Draws text using a bold 10pt monospace font (`y` = bottom baseline; use $y pprox 8	ext{..}10$ for top text). |
+| `drawText(text, x, y, color)` | `String text, int x, int y, int color` | Draws text using a bold 10pt monospace font (`y` = bottom baseline; use $y \approx 8\text{..}10$ for top text). |
 | `drawSmallText(text, x, y, color)` | `String text, int x, int y, int color` | Draws compact `3x5` pixel bitmap font text (`(x, y)` = **top-left** corner; 4px horizontal stride per character). |
 | `drawImage(name, x, y)` | `String assetName, int x, int y` | Draws an image from `app/src/main/assets/` at top-left $(x, y)$ with full alpha transparency. |
 | `drawImageFlipped(...)` | `String assetName, int x, int y, boolean flipX, boolean flipY` | Draws an image from `app/src/main/assets/` with optional horizontal/vertical mirroring. |
@@ -166,11 +243,11 @@ You do **not** need to draw every graphic manually with `setPixel` or `fillRect`
 
 #### Method A: Drag-and-Drop Image Files (`app/src/main/assets/`)
 
-1. Create your sprite or icon in any pixel-art editor (such as Aseprite, Piskel, LibreSprite, or Photoshop) at visor scale (for example, `8x6` or `16x16` pixels) and export it as a `.png` with a transparent background.
+1. Create your sprite or icon in any pixel-art editor (such as Aseprite, Piskel, LibreSprite, or Paint.NET) at visor scale (for example, `5x5`, `8x8`, or `16x16` pixels) and export it as a `.png` with a transparent background.
 
-2. Drop the `.png` file into `app/src/main/assets/` in Android Studio (for example, `app/src/main/assets/heart.png`).
+2. In Android Studio's left **Project** panel, locate **`app -> assets`** (or `app/src/main/assets` in **Project** view). Copy your `.png` file from Windows Explorer / Finder and paste it directly onto the `assets` folder in Android Studio!
 
-3. Call `canvas.drawImage("heart.png", x, y)` or `canvas.drawImageFlipped("heart.png", x, y, flipX, flipY)` inside `onRender()`!
+3. Call `canvas.drawImage("heart.png", x, y)` or `canvas.drawImageFlipped("heart.png", x, y, flipX, flipY)` inside `onRender()`:
 
 ```java
 // Draw app/src/main/assets/heart.png at (2, 1)
@@ -313,4 +390,4 @@ private void onPlayerScored(int newScore) {
 
 4. **Be Wary of Matrix Obstructions:**
 
-   * Some external parts of the helmet may obstruct the visor (for example, in JTingF's models, the side fin rings block the $pprox 20 	imes 20$ areas in the bottom left and right corners). Keep vital HUD elements near the top or center of the visor.
+   * Some external parts of the helmet may obstruct the visor (for example, in JTingF's models, the side fin rings block the $\approx 20 \times 20$ areas in the bottom left and right corners). Keep vital HUD elements near the top or center of the visor.
