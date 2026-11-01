@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,7 +45,8 @@ import yen.proto.stream.sdk.ProtoGame;
 /**
  * Built-in local emulator activity allowing developers to press "Run" in Android Studio
  * to test and step-debug their custom ProtoGame on a PC emulator or Android device
- * using on-screen touch controls, a PC keyboard, or an Xbox / Bluetooth gamepad.
+ * using on-screen touch controls, a PC keyboard, an Xbox / Bluetooth gamepad, or
+ * the built-in visor tilt simulator.
  */
 public class PreviewActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -57,8 +59,10 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
     private volatile boolean isRunning = false;
     private final Handler frameHandler = new Handler(Looper.getMainLooper());
     private SensorManager sensorManager;
-    private volatile float liveTiltX = 0f;
-    private volatile float liveTiltY = 0f;
+    private volatile float sensorTiltX = 0f;
+    private volatile float sensorTiltY = 0f;
+    private volatile float manualTiltX = 0f;
+    private volatile float manualTiltY = 0f;
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -124,7 +128,7 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         header.setTextSize(14f);
         header.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         header.setGravity(Gravity.CENTER);
-        header.setPadding(dp(12), dp(16), dp(12), dp(8));
+        header.setPadding(dp(12), dp(14), dp(12), dp(6));
         root.addView(header);
 
         final MatrixPreviewView displayView = new MatrixPreviewView(this, previewCanvas);
@@ -135,8 +139,8 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
                 screenWidth,
                 screenWidth / 4
         );
-        displayParams.topMargin = dp(12);
-        displayParams.bottomMargin = dp(16);
+        displayParams.topMargin = dp(8);
+        displayParams.bottomMargin = dp(10);
         displayView.setLayoutParams(displayParams);
         root.addView(displayView);
 
@@ -152,6 +156,7 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         controls.addView(createFourButtonRow());
         controls.addView(createSingleDpadRow(Input.Button.DOWN, "DOWN"));
         controls.addView(createSystemRow());
+        controls.addView(createTiltSimulatorPanel());
 
         root.addView(controls);
         setContentView(root);
@@ -164,7 +169,9 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
             public void run() {
                 if (!isRunning) return;
                 long start = System.currentTimeMillis();
-                previewInput.advanceFrame(liveTiltX, liveTiltY);
+                float effectiveTiltX = Math.abs(manualTiltX) > 0.01f ? manualTiltX : sensorTiltX;
+                float effectiveTiltY = Math.abs(manualTiltY) > 0.01f ? manualTiltY : sensorTiltY;
+                previewInput.advanceFrame(effectiveTiltX, effectiveTiltY);
                 game.incrementFrameCount();
                 game.onUpdate(previewInput);
                 game.onRender(previewCanvas);
@@ -220,7 +227,7 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         bg.setStroke(dp(1), Color.DKGRAY);
         b.setBackground(bg);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(wDp), dp(hDp));
-        lp.setMargins(dp(6), dp(4), dp(6), dp(4));
+        lp.setMargins(dp(6), dp(3), dp(6), dp(3));
         b.setLayoutParams(lp);
         b.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -244,9 +251,9 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER);
         View spacer = new View(this);
-        spacer.setLayoutParams(new LinearLayout.LayoutParams(dp(70), dp(64)));
+        spacer.setLayoutParams(new LinearLayout.LayoutParams(dp(70), dp(58)));
         row.addView(spacer);
-        row.addView(buildPadButton(label, button, 70, 64));
+        row.addView(buildPadButton(label, button, 70, 58));
         return row;
     }
 
@@ -254,13 +261,13 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER);
-        row.addView(buildPadButton("LEFT", Input.Button.LEFT, 70, 64));
-        row.addView(buildPadButton("RIGHT", Input.Button.RIGHT, 70, 64));
+        row.addView(buildPadButton("LEFT", Input.Button.LEFT, 70, 58));
+        row.addView(buildPadButton("RIGHT", Input.Button.RIGHT, 70, 58));
         View gap = new View(this);
-        gap.setLayoutParams(new LinearLayout.LayoutParams(dp(16), dp(64)));
+        gap.setLayoutParams(new LinearLayout.LayoutParams(dp(16), dp(58)));
         row.addView(gap);
-        row.addView(buildPadButton("A", Input.Button.A, 70, 64));
-        row.addView(buildPadButton("B", Input.Button.B, 70, 64));
+        row.addView(buildPadButton("A", Input.Button.A, 70, 58));
+        row.addView(buildPadButton("B", Input.Button.B, 70, 58));
         return row;
     }
 
@@ -269,9 +276,9 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER);
-        row.setPadding(0, dp(16), 0, dp(8));
-        row.addView(buildPadButton("SELECT", Input.Button.SELECT, 96, 42));
-        row.addView(buildPadButton("START", Input.Button.START, 96, 42));
+        row.setPadding(0, dp(10), 0, dp(4));
+        row.addView(buildPadButton("SELECT", Input.Button.SELECT, 92, 40));
+        row.addView(buildPadButton("START", Input.Button.START, 92, 40));
 
         Button boopBtn = new Button(this);
         boopBtn.setText("BOOP");
@@ -282,15 +289,125 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         boopBtn.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bg = new GradientDrawable();
         bg.setColor(0xFF1E293B);
-        bg.setCornerRadius(dp(21));
+        bg.setCornerRadius(dp(20));
         bg.setStroke(dp(1), 0xFF38BDF8);
         boopBtn.setBackground(bg);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(84), dp(42));
-        lp.setMargins(dp(6), dp(4), dp(6), dp(4));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(84), dp(40));
+        lp.setMargins(dp(6), dp(3), dp(6), dp(3));
         boopBtn.setLayoutParams(lp);
         boopBtn.setOnClickListener(v -> previewInput.triggerBoopPulse());
         row.addView(boopBtn);
         return row;
+    }
+
+    /**
+     * Builds an on-screen Tilt X / Tilt Y simulator bar so developers can test accelerometer
+     * tilt directly inside the Running Devices panel without opening Extended Controls.
+     */
+    @SuppressLint("SetTextI18n")
+    private LinearLayout createTiltSimulatorPanel() {
+        LinearLayout panel = new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setGravity(Gravity.CENTER_HORIZONTAL);
+        panel.setPadding(dp(20), dp(8), dp(20), dp(4));
+        panel.setLayoutParams(new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        ));
+
+        final TextView tiltLabel = new TextView(this);
+        tiltLabel.setText("Visor Tilt Simulator — X: 0.00  Y: 0.00");
+        tiltLabel.setTextColor(0xFF9CA3AF);
+        tiltLabel.setTextSize(11f);
+        tiltLabel.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        tiltLabel.setGravity(Gravity.CENTER);
+        panel.addView(tiltLabel);
+
+        final SeekBar seekX = new SeekBar(this);
+        seekX.setMax(200);
+        seekX.setProgress(100);
+        seekX.setFocusable(false);
+
+        final SeekBar seekY = new SeekBar(this);
+        seekY.setMax(200);
+        seekY.setProgress(100);
+        seekY.setFocusable(false);
+
+        SeekBar.OnSeekBarChangeListener listener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                manualTiltX = (seekX.getProgress() - 100) / 100f;
+                manualTiltY = (seekY.getProgress() - 100) / 100f;
+                tiltLabel.setText(String.format(
+                        Locale.US,
+                        "Visor Tilt Simulator — X: %.2f  Y: %.2f",
+                        manualTiltX,
+                        manualTiltY
+                ));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        };
+        seekX.setOnSeekBarChangeListener(listener);
+        seekY.setOnSeekBarChangeListener(listener);
+
+        LinearLayout rowX = new LinearLayout(this);
+        rowX.setOrientation(LinearLayout.HORIZONTAL);
+        rowX.setGravity(Gravity.CENTER_VERTICAL);
+        TextView lblX = new TextView(this);
+        lblX.setText("Tilt X:");
+        lblX.setTextColor(Color.LTGRAY);
+        lblX.setTextSize(11f);
+        rowX.addView(lblX);
+        LinearLayout.LayoutParams sxLp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
+        );
+        seekX.setLayoutParams(sxLp);
+        rowX.addView(seekX);
+        panel.addView(rowX);
+
+        LinearLayout rowY = new LinearLayout(this);
+        rowY.setOrientation(LinearLayout.HORIZONTAL);
+        rowY.setGravity(Gravity.CENTER_VERTICAL);
+        TextView lblY = new TextView(this);
+        lblY.setText("Tilt Y:");
+        lblY.setTextColor(Color.LTGRAY);
+        lblY.setTextSize(11f);
+        rowY.addView(lblY);
+        LinearLayout.LayoutParams syLp = new LinearLayout.LayoutParams(
+                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
+        );
+        seekY.setLayoutParams(syLp);
+        rowY.addView(seekY);
+
+        Button resetBtn = new Button(this);
+        resetBtn.setText("Center");
+        resetBtn.setAllCaps(false);
+        resetBtn.setTextSize(10f);
+        resetBtn.setFocusable(false);
+        resetBtn.setFocusableInTouchMode(false);
+        resetBtn.setTextColor(Color.WHITE);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFF374151);
+        bg.setCornerRadius(dp(12));
+        resetBtn.setBackground(bg);
+        LinearLayout.LayoutParams rLp = new LinearLayout.LayoutParams(dp(64), dp(30));
+        rLp.leftMargin = dp(6);
+        resetBtn.setLayoutParams(rLp);
+        resetBtn.setOnClickListener(v -> {
+            seekX.setProgress(100);
+            seekY.setProgress(100);
+        });
+        rowY.addView(resetBtn);
+        panel.addView(rowY);
+
+        return panel;
     }
 
     /**
@@ -419,8 +536,8 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event != null && event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            liveTiltX = Math.max(-1f, Math.min(1f, -event.values[0] / 9.81f));
-            liveTiltY = Math.max(-1f, Math.min(1f, event.values[1] / 9.81f));
+            sensorTiltX = Math.max(-1f, Math.min(1f, -event.values[0] / 9.81f));
+            sensorTiltY = Math.max(-1f, Math.min(1f, event.values[1] / 9.81f));
         }
     }
 

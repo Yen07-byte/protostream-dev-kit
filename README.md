@@ -46,7 +46,7 @@ At the very top of that panel is a dropdown menu that defaults to **Android**:
 
 ## 📱 Using the Built-In Mobile Device Emulator (Live Testing)
 
-You do **not** need to export a `.protogame` file and copy it to your phone every time you want to test a change! The Dev Kit includes a built-in **`PreviewActivity`** that simulates the `128 x 32` LED matrix, on-screen gamepad (**D-Pad**, **A**, **B**, **SELECT**, **START**), and visor **BOOP** sensor right on your computer screen.
+You do **not** need to export a `.protogame` file and copy it to your phone every time you want to test a change! The Dev Kit includes a built-in **`PreviewActivity`** that simulates the `128 x 32` LED matrix, on-screen gamepad (**D-Pad**, **A**, **B**, **SELECT**, **START**), visor **BOOP** sensor, and **Tilt X / Tilt Y** accelerometer sliders right on your computer screen.
 
 ### Step 1: Create a Virtual Phone in Android Studio (One-Time Setup)
 
@@ -70,33 +70,37 @@ Your virtual phone now appears in the **Device Manager** list and in the device 
 
 2. Click the green **Run 'app' (▶)** play button in the top toolbar (or press `Shift + F10` on Windows/Linux, `Ctrl + R` on macOS).
 
-3. The Android Emulator window will boot up and automatically launch **ProtoStream DevKit Live Preview**!
+3. The **Running Devices** panel will open and automatically launch **ProtoStream DevKit Live Preview**!
 
-### Step 3: Controlling Your Game (On-Screen Touch, PC Keyboard & Xbox Controller)
+### Step 3: Controlling Your Game in the Emulator
 
-Once `PreviewActivity` is running, you can control your game using any combination of mouse/touch, keyboard, or gamepad:
+Once `PreviewActivity` is running inside the **Running Devices** tab, you can control your game using any of the following methods:
 
-* **Mouse / Touch Overlay:** Click the on-screen **UP**, **DOWN**, **LEFT**, **RIGHT**, **A**, **B**, **SELECT**, **START**, and **BOOP** buttons directly inside the emulator window.
-* **Computer Keyboard:** Click once on the dark matrix preview area inside the emulator so the emulator window has keyboard focus, then use your PC keyboard:
-    * **Movement (D-Pad):** `W` / `A` / `S` / `D` or **Arrow Keys**
-    * **A Button:** `Z`, `Spacebar`, or `Enter`
-    * **B Button:** `X` or `Left/Right Shift`
-    * **Start Button:** `P` or `Esc`
-    * **Select Button:** `Tab`
-    * **Simulate Visor Boop:** `B` key
-    * *(Tip: If keyboard presses do not register in the emulator, open **Device Manager**, click the pencil/edit icon on your virtual device -> **Show Advanced Settings**, and make sure **Enable keyboard input** is checked.)*
-* **Xbox Controller / Bluetooth Gamepad:** `PreviewActivity` natively supports Xbox and standard Android gamepads (`KeyEvent` and `MotionEvent` analog sticks, D-Pad hat axes, and triggers):
-    * **Movement:** **D-Pad** or **Left Analog Stick**
-    * **A Button:** **A**, **RB (R1)**, or **RT (Right Trigger)**
-    * **B Button:** **B**, **X**, **Y**, **LB (L1)**, or **LT (Left Trigger)**
-    * **Start Button:** **Menu / Start** button
-    * **Select Button:** **View / Back / Select** button
-    * **Simulate Visor Boop:** Click either analog stick (**L3** or **R3**)
-    * *(Note on PC Emulator vs. Physical Phone with Xbox Controllers: When testing on a physical Android phone, any Bluetooth or USB-C Xbox controller connects natively to Android. When testing inside the PC Android Emulator on Windows, Android Studio's emulator does not forward XInput USB controllers directly by default—to use your Xbox controller on PC with the emulator, either keep Steam Desktop Input / JoyToKey / AntiMicroX running to map the controller to the keyboard keys above, or run `PreviewActivity` directly on your Android phone!)*
+* **Mouse / Touch Overlay:** Click the on-screen **UP**, **DOWN**, **LEFT**, **RIGHT**, **A**, **B**, **SELECT**, **START**, and **BOOP** buttons directly inside the emulator screen.
+* **Computer Keyboard (Requires Toggling `Hardware Input`):**
+    1. Look at the **top bar of the `Running Devices` tab** (right above the virtual phone screen). Near the **middle of that top bar**, click the **Hardware Input** button (the icon that looks like a **small mouse and keyboard**) to toggle hardware keyboard forwarding ON.
+    2. Click once inside the emulator screen so it has focus, then use your PC keyboard:
+        * **Movement (D-Pad):** `W` / `A` / `S` / `D` or **Arrow Keys**
+        * **A Button:** `Z`, `Spacebar`, or `Enter`
+        * **B Button:** `X` or `Left/Right Shift`
+        * **Start Button:** `P` or `Esc`
+        * **Select Button:** `Tab`
+        * **Simulate Visor Boop:** `B` key
+* **Xbox Controller / Gamepad Support:**
+    * `PreviewActivity` and ProtoStream's `CustomGameHostActivity` natively support Xbox and Bluetooth controller bindings:
+        * **Movement:** **D-Pad** or **Left Analog Stick**
+        * **A Button:** **A**, **RB (R1)**, or **RT (Right Trigger)**
+        * **B Button:** **B**, **X**, **Y**, **LB (L1)**, or **LT (Left Trigger)**
+        * **Start Button:** **Menu / Start** button
+        * **Select Button:** **View / Back / Select** button
+        * **Simulate Visor Boop:** Click either analog stick (**L3** or **R3**)
+    * ⚠️ **Why Xbox Controllers Don't Register Directly in the PC Emulator (And How to Use One):** Google's PC Android Emulator only forwards PC keyboard and mouse events through the **Hardware Input** toggle—it does **not** pass Windows XInput/USB controllers through to the virtual phone. To play with your Xbox controller:
+        1. **On PC (Inside the Emulator):** Use **Steam** (*Steam -> Settings -> Controller -> Desktop Layout*), **AntiMicroX**, or **JoyToKey** to map your Xbox controller buttons to the keyboard keys above (`W`/`A`/`S`/`D`, `Space`, `X`, `P`, `Tab`, `B`), then enable the **Hardware Input** (mouse & keyboard) toggle in the **Running Devices** top bar.
+        2. **On a Physical Android Phone:** Pair your Xbox controller via Bluetooth (or plug it in via USB-C) to your real Android phone—Android's native OS input stack passes all Xbox sticks, triggers, and buttons directly to `PreviewActivity` and ProtoStream with zero extra software!
 * **Simulating 3D Head Tilt (`getTiltX` / `getTiltY`):**
-    1. Look at the vertical toolbar attached to the side of the Android Emulator window and click the **`...` (Extended Controls)** button at the bottom.
-    2. Click **Virtual sensors** in the left menu of the popup window.
-    3. Select the **Rotate** or **Move** radio button and drag the 3D phone model to tilt the virtual device in real time!
+    * **Method 1 — Built-In Tilt Sliders (Easiest!):** At the bottom of `PreviewActivity` on the virtual phone screen, drag the **Tilt X** and **Tilt Y** sliders (and tap **Center** to zero them out) to test `input.getTiltX()` and `input.getTiltY()` immediately!
+    * **Method 2 — Android Emulator Extended Controls (`⋮`):** Look at the **far right of the top bar** in the **Running Devices** tab and click the **`⋮` (Extended Controls)** icon -> **Virtual sensors** -> **Rotate / Move**.
+        * *(Troubleshooting Tip: In some versions of Android Studio, clicking **`⋮` (Extended Controls)** while the emulator is docked inside the **Running Devices** tab does nothing—especially while **Hardware Input** is toggled on. To fix `⋮` not opening, first untoggle **Hardware Input**, or go to **`File -> Settings -> Tools -> Emulator`**, uncheck **`Launch in the Running Devices tool window`**, and restart the emulator so it opens in its own standalone window where Extended Controls always works.)*
 
 > 💡 **Testing a New or Renamed Game Class in the Emulator:** By default, `PreviewActivity.java` instantiates `new SampleGame()` (`game = new SampleGame();`). If you rename `SampleGame` or create a second game class (such as `MyCoolGame`), update that single line in `PreviewActivity.java` to `game = new MyCoolGame();` so the emulator previews your new class!
 
