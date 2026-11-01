@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -43,7 +44,7 @@ import yen.proto.stream.sdk.ProtoGame;
 /**
  * Built-in local emulator activity allowing developers to press "Run" in Android Studio
  * to test and step-debug their custom ProtoGame on a PC emulator or Android device
- * before packaging the ".protogame" file.
+ * using on-screen touch controls, a PC keyboard, or an Xbox / Bluetooth gamepad.
  */
 public class PreviewActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -113,6 +114,9 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.BLACK);
         root.setGravity(Gravity.CENTER_HORIZONTAL);
+        root.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        root.setFocusable(true);
+        root.setFocusableInTouchMode(true);
 
         TextView header = new TextView(this);
         header.setText(gameTitle + " — by " + gameAuthor + " (DevKit Live Preview)");
@@ -124,6 +128,8 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         root.addView(header);
 
         final MatrixPreviewView displayView = new MatrixPreviewView(this, previewCanvas);
+        displayView.setFocusable(true);
+        displayView.setFocusableInTouchMode(true);
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         LinearLayout.LayoutParams displayParams = new LinearLayout.LayoutParams(
                 screenWidth,
@@ -149,6 +155,7 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
 
         root.addView(controls);
         setContentView(root);
+        displayView.requestFocus();
 
         isRunning = true;
         game.onInit();
@@ -203,6 +210,8 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         Button b = new Button(this);
         b.setText(label);
         b.setAllCaps(false);
+        b.setFocusable(false);
+        b.setFocusableInTouchMode(false);
         b.setTextColor(Color.WHITE);
         b.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bg = new GradientDrawable();
@@ -267,6 +276,8 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         Button boopBtn = new Button(this);
         boopBtn.setText("BOOP");
         boopBtn.setAllCaps(false);
+        boopBtn.setFocusable(false);
+        boopBtn.setFocusableInTouchMode(false);
         boopBtn.setTextColor(0xFF38BDF8);
         boopBtn.setTypeface(Typeface.DEFAULT_BOLD);
         GradientDrawable bg = new GradientDrawable();
@@ -282,45 +293,36 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
         return row;
     }
 
+    /**
+     * Handles physical keyboard keys and Xbox / Bluetooth controller button events.
+     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        Input.Button mapped = null;
-        switch (event.getKeyCode()) {
-            case KeyEvent.KEYCODE_DPAD_UP:
-            case KeyEvent.KEYCODE_W:
-                mapped = Input.Button.UP;
-                break;
-            case KeyEvent.KEYCODE_DPAD_DOWN:
-            case KeyEvent.KEYCODE_S:
-                mapped = Input.Button.DOWN;
-                break;
-            case KeyEvent.KEYCODE_DPAD_LEFT:
-            case KeyEvent.KEYCODE_A:
-                mapped = Input.Button.LEFT;
-                break;
-            case KeyEvent.KEYCODE_DPAD_RIGHT:
-            case KeyEvent.KEYCODE_D:
-                mapped = Input.Button.RIGHT;
-                break;
-            case KeyEvent.KEYCODE_BUTTON_A:
-            case KeyEvent.KEYCODE_ENTER:
-            case KeyEvent.KEYCODE_SPACE:
-            case KeyEvent.KEYCODE_Z:
-                mapped = Input.Button.A;
-                break;
-            case KeyEvent.KEYCODE_BUTTON_B:
-            case KeyEvent.KEYCODE_X:
-                mapped = Input.Button.B;
-                break;
-            case KeyEvent.KEYCODE_BUTTON_START:
-            case KeyEvent.KEYCODE_P:
-                mapped = Input.Button.START;
-                break;
-            case KeyEvent.KEYCODE_BUTTON_SELECT:
-            case KeyEvent.KEYCODE_TAB:
-                mapped = Input.Button.SELECT;
-                break;
+        int keyCode = event.getKeyCode();
+
+        // Allow 'B' key on keyboard or L3/R3 thumbstick click on Xbox controller to trigger Boop
+        if (keyCode == KeyEvent.KEYCODE_B
+                || keyCode == KeyEvent.KEYCODE_BUTTON_THUMBL
+                || keyCode == KeyEvent.KEYCODE_BUTTON_THUMBR) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+                previewInput.triggerBoopPulse();
+            }
+            return true;
         }
+
+        // Many Xbox Wireless Controllers emit KEYCODE_BACK for the View/Select button
+        boolean isGamepadSource = (event.getSource() & InputDevice.SOURCE_GAMEPAD) != 0
+                || (event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0;
+        if (keyCode == KeyEvent.KEYCODE_BACK && isGamepadSource) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                previewInput.setPressed(Input.Button.SELECT, true);
+            } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                previewInput.setPressed(Input.Button.SELECT, false);
+            }
+            return true;
+        }
+
+        Input.Button mapped = mapKeyCodeToButton(keyCode);
         if (mapped != null) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 previewInput.setPressed(mapped, true);
@@ -330,6 +332,88 @@ public class PreviewActivity extends AppCompatActivity implements SensorEventLis
             return true;
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    /**
+     * Maps keyboard keycodes and Xbox/gamepad button keycodes to SDK Input.Button constants.
+     */
+    private Input.Button mapKeyCodeToButton(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP:
+            case KeyEvent.KEYCODE_W:
+                return Input.Button.UP;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+            case KeyEvent.KEYCODE_S:
+                return Input.Button.DOWN;
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+            case KeyEvent.KEYCODE_A:
+                return Input.Button.LEFT;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+            case KeyEvent.KEYCODE_D:
+                return Input.Button.RIGHT;
+            case KeyEvent.KEYCODE_BUTTON_A:
+            case KeyEvent.KEYCODE_BUTTON_R1:
+            case KeyEvent.KEYCODE_BUTTON_R2:
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_ENTER:
+            case KeyEvent.KEYCODE_NUMPAD_ENTER:
+            case KeyEvent.KEYCODE_SPACE:
+            case KeyEvent.KEYCODE_Z:
+                return Input.Button.A;
+            case KeyEvent.KEYCODE_BUTTON_B:
+            case KeyEvent.KEYCODE_BUTTON_X:
+            case KeyEvent.KEYCODE_BUTTON_Y:
+            case KeyEvent.KEYCODE_BUTTON_L1:
+            case KeyEvent.KEYCODE_BUTTON_L2:
+            case KeyEvent.KEYCODE_X:
+            case KeyEvent.KEYCODE_SHIFT_LEFT:
+            case KeyEvent.KEYCODE_SHIFT_RIGHT:
+                return Input.Button.B;
+            case KeyEvent.KEYCODE_BUTTON_START:
+            case KeyEvent.KEYCODE_P:
+            case KeyEvent.KEYCODE_ESCAPE:
+                return Input.Button.START;
+            case KeyEvent.KEYCODE_BUTTON_SELECT:
+            case KeyEvent.KEYCODE_BUTTON_MODE:
+            case KeyEvent.KEYCODE_TAB:
+                return Input.Button.SELECT;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Handles Xbox / Bluetooth controller analog sticks, D-Pad hat axes (AXIS_HAT_X / AXIS_HAT_Y),
+     * and Left/Right analog triggers (LT / RT).
+     */
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        boolean isJoystick = (event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0
+                || (event.getSource() & InputDevice.SOURCE_GAMEPAD) != 0;
+        if (isJoystick && event.getAction() == MotionEvent.ACTION_MOVE) {
+            float axisX = event.getAxisValue(MotionEvent.AXIS_X);
+            float axisY = event.getAxisValue(MotionEvent.AXIS_Y);
+            float hatX = event.getAxisValue(MotionEvent.AXIS_HAT_X);
+            float hatY = event.getAxisValue(MotionEvent.AXIS_HAT_Y);
+
+            previewInput.setPressed(Input.Button.LEFT, axisX < -0.5f || hatX < -0.5f);
+            previewInput.setPressed(Input.Button.RIGHT, axisX > 0.5f || hatX > 0.5f);
+            previewInput.setPressed(Input.Button.UP, axisY < -0.5f || hatY < -0.5f);
+            previewInput.setPressed(Input.Button.DOWN, axisY > 0.5f || hatY > 0.5f);
+
+            float rTrig = Math.max(
+                    event.getAxisValue(MotionEvent.AXIS_RTRIGGER),
+                    event.getAxisValue(MotionEvent.AXIS_GAS)
+            );
+            float lTrig = Math.max(
+                    event.getAxisValue(MotionEvent.AXIS_LTRIGGER),
+                    event.getAxisValue(MotionEvent.AXIS_BRAKE)
+            );
+            previewInput.setPressed(Input.Button.A, rTrig > 0.5f);
+            previewInput.setPressed(Input.Button.B, lTrig > 0.5f);
+            return true;
+        }
+        return super.dispatchGenericMotionEvent(event);
     }
 
     @Override

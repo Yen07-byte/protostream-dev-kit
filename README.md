@@ -21,14 +21,14 @@ If you do not have Android Studio installed yet:
 ### 2. Cloning & Opening the Dev Kit Project
 
 1. Open **Android Studio**.
-   * If you are on the **Welcome to Android Studio** screen, click **Get from VCS** (or **Clone Repository**).
-   * If you already have another project open, click **File -> New -> Project from Version Control...** in the top menu bar.
+    * If you are on the **Welcome to Android Studio** screen, click **Get from VCS** (or **Clone Repository**).
+    * If you already have another project open, click **File -> New -> Project from Version Control...** in the top menu bar.
 
 2. In the **URL** field, paste the URL of this repository (`https://github.com/Yen07-byte/protostream-dev-kit`) and click **Clone**.
 
 3. **Wait for Gradle Sync to Finish (Important!):**
-   * Look at the **bottom-right corner** of the Android Studio window. You will see a progress bar that says `Gradle Build Running` or `Syncing...`.
-   * The very first time you open the project, Android Studio downloads the build tools it needs (which can take 1–3 minutes depending on your internet connection). Wait until that bottom-right progress bar disappears before running or building your game.
+    * Look at the **bottom-right corner** of the Android Studio window. You will see a progress bar that says `Gradle Build Running` or `Syncing...`.
+    * The very first time you open the project, Android Studio downloads the build tools it needs (which can take 1–3 minutes depending on your internet connection). Wait until that bottom-right progress bar disappears before running or building your game.
 
 ### 3. Navigating Android Studio's Project Explorer (`Android` View vs. `Project` View)
 
@@ -37,10 +37,11 @@ On the **far-left side** of Android Studio is the **Project** panel (if it is mi
 At the very top of that panel is a dropdown menu that defaults to **Android**:
 
 * **Android View (Default):** Groups your code and assets cleanly for daily coding:
-  * `app -> java -> com.protostream.devkit -> SampleGame` *(Your main game code!)*
-  * `app -> java -> com.protostream.devkit -> PreviewActivity` *(Built-in live emulator preview)*
-  * `app -> java -> com.protostream.devkit -> ProtoStreamSDK` *(SDK reference interfaces)*
-  * `app -> assets` *(Folder where you drop `.png` sprite images)*
+    * `app -> manifests -> AndroidManifest.xml` *(Registers `PreviewActivity` for the live emulator)*
+    * `app -> java -> com.protostream.devkit -> SampleGame` *(Your main game code!)*
+    * `app -> java -> com.protostream.devkit -> PreviewActivity` *(Built-in live emulator preview)*
+    * `app -> java -> com.protostream.devkit -> ProtoStreamSDK` *(SDK reference interfaces)*
+    * `app -> assets` *(Folder where you drop `.png` sprite images)*
 * **Project View (Shows Real Folders on Disk):** Click the **Android** dropdown at the top-left and switch it to **Project** whenever you want to see the actual folder tree on your computer—including the **`app/output/`** folder where your finished `.protogame` files are saved!
 
 ## 📱 Using the Built-In Mobile Device Emulator (Live Testing)
@@ -58,8 +59,8 @@ If you have never created an Android Emulator before, follow these steps once:
 3. Under the **Phone** category, select any modern device profile (such as **Pixel 7** or **Pixel 8**) and click **Next**.
 
 4. On the **System Image** screen, look at the top recommended release (such as **API 34 ("UpsideDownCake")** or **API 35 ("VanillaIceCream")**):
-   * If there is a blue **Download** icon next to the system image name, click it and wait for the download to complete, then click **Finish**.
-   * Select that system image and click **Next**, then click **Finish**.
+    * If there is a blue **Download** icon next to the system image name, click it and wait for the download to complete, then click **Finish**.
+    * Select that system image and click **Next**, then click **Finish**.
 
 Your virtual phone now appears in the **Device Manager** list and in the device dropdown menu on Android Studio's top toolbar!
 
@@ -71,28 +72,37 @@ Your virtual phone now appears in the **Device Manager** list and in the device 
 
 3. The Android Emulator window will boot up and automatically launch **ProtoStream DevKit Live Preview**!
 
-### Step 3: Controlling Your Game in the Emulator
+### Step 3: Controlling Your Game (On-Screen Touch, PC Keyboard & Xbox Controller)
 
-Once the preview app is running on the virtual phone, you can test your game using any of the following methods:
+Once `PreviewActivity` is running, you can control your game using any combination of mouse/touch, keyboard, or gamepad:
 
 * **Mouse / Touch Overlay:** Click the on-screen **UP**, **DOWN**, **LEFT**, **RIGHT**, **A**, **B**, **SELECT**, **START**, and **BOOP** buttons directly inside the emulator window.
-* **Computer Keyboard:** Click once inside the emulator screen so it has keyboard focus, then use your PC keyboard:
-  * **Movement (D-Pad):** `W` / `A` / `S` / `D` or **Arrow Keys**
-  * **A Button:** `Z`, `Spacebar`, or `Enter`
-  * **B Button:** `X`
-  * **Start Button:** `P`
-  * **Select Button:** `Tab`
-* **Simulating Visor Boops:** Click the blue **BOOP** button at the bottom-right of the preview controls to trigger `input.isJustBooped()` / `input.isBooped()`.
+* **Computer Keyboard:** Click once on the dark matrix preview area inside the emulator so the emulator window has keyboard focus, then use your PC keyboard:
+    * **Movement (D-Pad):** `W` / `A` / `S` / `D` or **Arrow Keys**
+    * **A Button:** `Z`, `Spacebar`, or `Enter`
+    * **B Button:** `X` or `Left/Right Shift`
+    * **Start Button:** `P` or `Esc`
+    * **Select Button:** `Tab`
+    * **Simulate Visor Boop:** `B` key
+    * *(Tip: If keyboard presses do not register in the emulator, open **Device Manager**, click the pencil/edit icon on your virtual device -> **Show Advanced Settings**, and make sure **Enable keyboard input** is checked.)*
+* **Xbox Controller / Bluetooth Gamepad:** `PreviewActivity` natively supports Xbox and standard Android gamepads (`KeyEvent` and `MotionEvent` analog sticks, D-Pad hat axes, and triggers):
+    * **Movement:** **D-Pad** or **Left Analog Stick**
+    * **A Button:** **A**, **RB (R1)**, or **RT (Right Trigger)**
+    * **B Button:** **B**, **X**, **Y**, **LB (L1)**, or **LT (Left Trigger)**
+    * **Start Button:** **Menu / Start** button
+    * **Select Button:** **View / Back / Select** button
+    * **Simulate Visor Boop:** Click either analog stick (**L3** or **R3**)
+    * *(Note on PC Emulator vs. Physical Phone with Xbox Controllers: When testing on a physical Android phone, any Bluetooth or USB-C Xbox controller connects natively to Android. When testing inside the PC Android Emulator on Windows, Android Studio's emulator does not forward XInput USB controllers directly by default—to use your Xbox controller on PC with the emulator, either keep Steam Desktop Input / JoyToKey / AntiMicroX running to map the controller to the keyboard keys above, or run `PreviewActivity` directly on your Android phone!)*
 * **Simulating 3D Head Tilt (`getTiltX` / `getTiltY`):**
-  1. Look at the vertical toolbar attached to the side of the Android Emulator window and click the **`...` (Extended Controls)** button at the bottom.
-  2. Click **Virtual sensors** in the left menu of the popup window.
-  3. Select the **Rotate** or **Move** radio button and drag the 3D phone model to tilt the virtual device in real time!
+    1. Look at the vertical toolbar attached to the side of the Android Emulator window and click the **`...` (Extended Controls)** button at the bottom.
+    2. Click **Virtual sensors** in the left menu of the popup window.
+    3. Select the **Rotate** or **Move** radio button and drag the 3D phone model to tilt the virtual device in real time!
 
-> 💡 **Testing a New or Renamed Game Class in the Emulator:** By default, `PreviewActivity.java` instantiates `new SampleGame()` on line 69 (`game = new SampleGame();`). If you rename `SampleGame` or create a second game class (such as `MyCoolGame`), update that single line in `PreviewActivity.java` to `game = new MyCoolGame();` so the emulator previews your new class!
+> 💡 **Testing a New or Renamed Game Class in the Emulator:** By default, `PreviewActivity.java` instantiates `new SampleGame()` (`game = new SampleGame();`). If you rename `SampleGame` or create a second game class (such as `MyCoolGame`), update that single line in `PreviewActivity.java` to `game = new MyCoolGame();` so the emulator previews your new class!
 
 ### Optional: Live Testing on a Physical Android Phone
 
-If you prefer to run the live preview on your real Android phone instead of the PC emulator:
+If you prefer to run the live preview on your real Android phone (for example, to test directly with a Bluetooth Xbox controller or physical accelerometer):
 
 1. On your phone, open **Settings -> About phone** and tap **Build number** 7 times until it says *"You are now a developer!"*.
 
@@ -137,8 +147,8 @@ When you are ready to export your finished `.protogame` file for the ProtoStream
 1. Click the **Terminal** tab at the **bottom** of Android Studio.
 
 2. Run the following command and press **Enter**:
-   * **Windows:** `.\gradlew.bat buildProtoGame`
-   * **macOS / Linux:** `./gradlew buildProtoGame`
+    * **Windows:** `.\gradlew.bat buildProtoGame`
+    * **macOS / Linux:** `./gradlew buildProtoGame`
 
 Android Studio will compile your code, generate `metadata.json`, bundle all sprite images from `app/src/main/assets/`, and print the output path in the build log!
 
@@ -196,7 +206,7 @@ The `@GameInfo` annotation allows ProtoStream's Custom Game manager to index and
 
 The `ProtoCanvas` provides drawing primitives and sprite renderers mapped to the **128 x 32 pixel LED matrix**.
 
-* **Coordinates:** $(x, y)$ where $(0,0)$ is the **Top-Left** corner, and $(127, 31)$ is the **Bottom-Right** corner.
+* **Coordinates:** `(x, y)` where `(0, 0)` is the **Top-Left** corner, and `(127, 31)` is the **Bottom-Right** corner.
 
 * **Color Format:** 32-bit ARGB Hexadecimal Integers (`0xAARRGGBB`). Pixels with alpha `0x00` are transparent; semi-transparent pixels (`0x01..0xFE`) automatically alpha-blend over the canvas.
 
@@ -223,19 +233,19 @@ canvas.drawText("PAUSED", 46, 18, 0xFFF59E0B);
 
 | Method | Parameters | Description |
 | ----- | ----- | ----- |
-| `clear(color)` | `int color` | Fills the entire $128 \times 32$ canvas with a solid ARGB color. |
-| `setPixel(x, y, color)` | `int x, int y, int color` | Sets an individual pixel at $(x, y)$ with alpha-blending support. |
-| `fillRect(x, y, w, h, color)` | `int x, int y, int width, int height, int color` | Fills a solid rectangle from $(x, y)$ extending $w$ pixels right and $h$ pixels down. |
+| `clear(color)` | `int color` | Fills the entire `128 x 32` canvas with a solid ARGB color. |
+| `setPixel(x, y, color)` | `int x, int y, int color` | Sets an individual pixel at `(x, y)` with alpha-blending support. |
+| `fillRect(x, y, w, h, color)` | `int x, int y, int width, int height, int color` | Fills a solid rectangle from `(x, y)` extending `w` pixels right and `h` pixels down. |
 | `drawRect(x, y, w, h, color)` | `int x, int y, int width, int height, int color` | Draws a 1-pixel unfilled rectangle outline. |
-| `drawLine(x1, y1, x2, y2, color)` | `int x1, int y1, int x2, int y2, int color` | Draws a crisp 1-pixel line between $(x_1, y_1)$ and $(x_2, y_2)$. |
-| `drawCircle(cx, cy, r, color)` | `int cx, int cy, int radius, int color` | Draws a 1-pixel circle outline centered at $(cx, cy)$. |
-| `fillCircle(cx, cy, r, color)` | `int cx, int cy, int radius, int color` | Draws a solid filled circle centered at $(cx, cy)$. |
-| `drawText(text, x, y, color)` | `String text, int x, int y, int color` | Draws text using a bold 10pt monospace font (`y` = bottom baseline; use $y \approx 8\text{..}10$ for top text). |
+| `drawLine(x1, y1, x2, y2, color)` | `int x1, int y1, int x2, int y2, int color` | Draws a crisp 1-pixel line between `(x1, y1)` and `(x2, y2)`. |
+| `drawCircle(cx, cy, r, color)` | `int cx, int cy, int radius, int color` | Draws a 1-pixel circle outline centered at `(cx, cy)`. |
+| `fillCircle(cx, cy, r, color)` | `int cx, int cy, int radius, int color` | Draws a solid filled circle centered at `(cx, cy)`. |
+| `drawText(text, x, y, color)` | `String text, int x, int y, int color` | Draws text using a bold 10pt monospace font (`y` = bottom baseline; use `y = 8..10` for top text). |
 | `drawSmallText(text, x, y, color)` | `String text, int x, int y, int color` | Draws compact `3x5` pixel bitmap font text (`(x, y)` = **top-left** corner; 4px horizontal stride per character). |
-| `drawImage(name, x, y)` | `String assetName, int x, int y` | Draws an image from `app/src/main/assets/` at top-left $(x, y)$ with full alpha transparency. |
+| `drawImage(name, x, y)` | `String assetName, int x, int y` | Draws an image from `app/src/main/assets/` at top-left `(x, y)` with full alpha transparency. |
 | `drawImageFlipped(...)` | `String assetName, int x, int y, boolean flipX, boolean flipY` | Draws an image from `app/src/main/assets/` with optional horizontal/vertical mirroring. |
 | `drawSpriteFrame(...)` | `String assetName, int frameW, int frameH, int frameIndex, int x, int y, boolean flipX, boolean flipY` | Draws a single animation frame (`0, 1, 2, ...` left-to-right, top-to-bottom) from a sprite sheet in `assets/`. |
-| `drawPixelMap(...)` | `int[] pixels, int w, int h, int x, int y, boolean flipX, boolean flipY` | Draws an in-code 1D ARGB pixel array of size `w * h` at $(x, y)$ (`0x00000000` = transparent). |
+| `drawPixelMap(...)` | `int[] pixels, int w, int h, int x, int y, boolean flipX, boolean flipY` | Draws an in-code 1D ARGB pixel array of size `w * h` at `(x, y)` (`0x00000000` = transparent). |
 
 ### 4. Importing Sprites, Sprite Sheets & Pixel Maps
 
@@ -296,18 +306,18 @@ The `Input` interface handles controller state across physical gamepads, touch-s
 
 #### Available Buttons
 
-| Button Enum | Keyboard Mapping | Touch Overlay | Gamepad Hardware Mapping |
+| Button Enum | Keyboard Mapping | Touch Overlay | Xbox / Gamepad Hardware Mapping |
 | ----- | ----- | ----- | ----- |
 | `Input.Button.UP` | `W` / Up Arrow | D-Pad Up | D-Pad Up / Left Stick Up |
 | `Input.Button.DOWN` | `S` / Down Arrow | D-Pad Down | D-Pad Down / Left Stick Down |
 | `Input.Button.LEFT` | `A` / Left Arrow | D-Pad Left | D-Pad Left / Left Stick Left |
 | `Input.Button.RIGHT` | `D` / Right Arrow | D-Pad Right | D-Pad Right / Left Stick Right |
-| `Input.Button.A` | `Z` / `Space` / `Enter` | A Button | Button A / Cross / R1 / R2 / Right Trigger |
-| `Input.Button.B` | `X` | B Button | Button B / Circle / X / Y / L1 / L2 / Left Trigger |
-| `Input.Button.START` | `P` | Start Button | Gamepad Start Button |
-| `Input.Button.SELECT` | `Tab` | Select Button | Gamepad Select Button |
+| `Input.Button.A` | `Z` / `Space` / `Enter` | A Button | Button A / Cross / RB (R1) / RT (Right Trigger) |
+| `Input.Button.B` | `X` / `Shift` | B Button | Button B / Circle / X / Y / LB (L1) / LT (Left Trigger) |
+| `Input.Button.START` | `P` / `Esc` | Start Button | Menu / Start Button |
+| `Input.Button.SELECT` | `Tab` | Select Button | View / Back / Select Button |
 
-> 💡 **Visor Boop & Head Gesture Support:** Any visor **Boop Detection** or **Head & Motion Gesture** configured in ProtoStream to emit a controller button or trigger input automatically maps to its corresponding `Input.Button` inside custom games!
+> 💡 **Visor Boop & Head Gesture Support:** Any visor **Boop Detection** or **Head & Motion Gesture** configured in ProtoStream to emit a controller button or trigger input automatically maps to its corresponding `Input.Button` inside custom games! In `PreviewActivity`, you can also press `B` on your keyboard or click `L3` / `R3` on an Xbox controller to simulate a visor Boop.
 
 #### Continuous Hold vs. Built-In Edge Triggering (`isPressed` vs. `isJustPressed`)
 
@@ -376,18 +386,18 @@ private void onPlayerScored(int newScore) {
 
 1. **Avoid In-Loop Garbage Collection (GC Thrashing):**
 
-   * Do **not** allocate `new` objects inside `onUpdate()` or `onRender()` (e.g., `new Particle()`).
+    * Do **not** allocate `new` objects inside `onUpdate()` or `onRender()` (e.g., `new Particle()`).
 
-   * Pre-allocate entity arrays and objects during `onInit()`, then reuse them across frames. GC pauses on Android can cause visible stutter on the LED matrix stream.
+    * Pre-allocate entity arrays and objects during `onInit()`, then reuse them across frames. GC pauses on Android can cause visible stutter on the LED matrix stream.
 
 2. **Use `drawSmallText` for Compact HUDs:**
 
-   * Because the matrix is only $32$ pixels tall, use `canvas.drawSmallText(...)` (`3x5` pixel font) for scores, lives, and status bars so your gameplay area has maximum vertical room.
+    * Because the matrix is only `32` pixels tall, use `canvas.drawSmallText(...)` (`3x5` pixel font) for scores, lives, and status bars so your gameplay area has maximum vertical room.
 
 3. **Optimized Screen Refreshing:**
 
-   * Always call `canvas.clear(...)` at the start of `onRender()` to flush the frame buffer before drawing the next scene.
+    * Always call `canvas.clear(...)` at the start of `onRender()` to flush the frame buffer before drawing the next scene.
 
 4. **Be Wary of Matrix Obstructions:**
 
-   * Some external parts of the helmet may obstruct the visor (for example, in JTingF's models, the side fin rings block the $\approx 20 \times 20$ areas in the bottom left and right corners). Keep vital HUD elements near the top or center of the visor.
+    * Some external parts of the helmet may obstruct the visor (for example, in JTingF's models, the side fin rings block the `~20 x 20` pixel areas in the bottom-left and bottom-right corners). Keep vital HUD elements near the top or center of the visor.
